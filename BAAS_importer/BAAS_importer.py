@@ -44,9 +44,8 @@ def get_csvs(dataset_id):
     # dl csvs as StringIO
     for csv in csvs:
         res = requests.get(csv['url'])
-        csvIO = io.StringIO()
-        csvIO.write(res.content)
-        csvIO.seek(0)
+        res.encoding = 'utf-8'
+        csvIO = io.StringIO(res.text, newline="")
         csv['csv'] = csvIO
 
     return csvs
