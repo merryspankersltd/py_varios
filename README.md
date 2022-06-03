@@ -1,2 +1,2 @@
-# py_varios
+# Py varios
 uncurated python scripts, various purposes
