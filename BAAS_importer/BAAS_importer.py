@@ -46,7 +46,7 @@ def get_csvs(dataset_id):
         res = requests.get(csv['url'])
         res.encoding = 'utf-8'
         csvIO = io.StringIO(res.text, newline="")
-        csv['csv'] = csvIO
+        csv['csvIO'] = csvIO
 
     return csvs
 
