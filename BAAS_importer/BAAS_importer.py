@@ -26,6 +26,21 @@ CSV_URLS = "csv_list.txt"
 import pandas as pd
 from sqlalchemy import create_engine
 
-# get csv list
-with open(CSV_URLS, 'r') as f:
-    csvs = f.readlines()
+def inject(csv):
+    """
+    injects csv into postgres schema"""
+    
+    # use pandas as csv reader
+    df = pd.read_csv(csv)
+    df.columns = [c.lower() for c in df.columns]
+
+    # use sql_alchemy as postgres writer
+    engine = create_engine(CONN)
+    df.to_sql('table_name', engine)
+
+if __name__ == "__main__":
+    # get csv list
+    with open(CSV_URLS, 'r') as f:
+        csvs = [csv.rstrip() for csv in f.readlines()]
+
+    # cycle through csv and inject them into 
