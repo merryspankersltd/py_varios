@@ -1,2 +1,2 @@
 # Py varios
-uncurated python scripts, various purposes
+uncurated python scripts, various purposes, personal use mostly...
