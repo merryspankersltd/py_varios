@@ -19,7 +19,7 @@ code inspiration: https://stackoverflow.com/questions/2987433/how-to-import-csv-
 """
 
 # GLOBALS
-INI_FILE = "connexion_string.ini"
+INI_FILE = "params.ini"
 CONN_FILE = "postgres_credentials.ini"
 
 import os
