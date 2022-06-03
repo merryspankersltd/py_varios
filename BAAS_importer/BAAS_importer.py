@@ -23,6 +23,8 @@ code inspiration: https://stackoverflow.com/questions/2987433/how-to-import-csv-
 CONN = "connexion_string.ini"
 CSV_URLS = "csv_list.txt"
 
+import os
+import configparser
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -35,12 +37,17 @@ def inject(csv):
     df.columns = [c.lower() for c in df.columns]
 
     # use sql_alchemy as postgres writer
+    config = configparser.ConfigParser()
+    config.read(CONN)
+    conn = config['DEFAULT']['ConnectionString']
     engine = create_engine(CONN)
-    df.to_sql('table_name', engine)
+    df.to_sql(os.path.splitext(os.path.basename(csv))[0], engine, schema='d_mobilite')
 
 if __name__ == "__main__":
     # get csv list
     with open(CSV_URLS, 'r') as f:
         csvs = [csv.rstrip() for csv in f.readlines()]
 
-    # cycle through csv and inject them into 
+    # cycle through csv and inject them into
+    for csv in csvs:
+        inject(csv)
