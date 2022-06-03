@@ -15,9 +15,17 @@ inputs:
 outputs:
 --------
     - populated schema with new tables
+
+code inspiration: https://stackoverflow.com/questions/2987433/how-to-import-csv-file-data-into-a-postgresql-table
 """
 
 # GLOBALS
-CONN = None
+CONN = "connexion_string.ini"
 CSV_URLS = "csv_list.txt"
 
+import pandas as pd
+from sqlalchemy import create_engine
+
+# get csv list
+with open(CSV_URLS, 'r') as f:
+    csvs = f.readlines()
