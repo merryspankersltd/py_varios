@@ -23,9 +23,33 @@ code inspiration: https://stackoverflow.com/questions/2987433/how-to-import-csv-
 INI_FILE = "connexion_string.ini"
 
 import os
+import io
 import configparser
+import requests
 import pandas as pd
 from sqlalchemy import create_engine
+
+def get_csvs(dataset_id):
+    """
+    retrieve csvs as pseudofiles from data.gouv.fr API
+    input: dataset_id as string
+    returns: list of dicts (url, name, cvsIO)"""
+    
+    # retrieve csv urls
+    res = requests.get('https://www.data.gouv.fr/api/1/datasets/' + dataset_id)
+    csvs = [
+        {'url': r['url'], 'name': os.spslitext(r['title'])[0]}
+        for r in res.json()['resources'] if r['format']=='csv']
+    
+    # dl csvs as StringIO
+    for csv in csvs:
+        res = requests.get(csv['url'])
+        csvIO = io.StringIO()
+        csvIO.write(res.content)
+        csvIO.seek(0)
+        res['csv'] = csvIO
+
+    return csvs
 
 def inject(csv, connection, dest_schema):
     """
@@ -45,13 +69,12 @@ if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read(INI_FILE)
     connection = config['DEFAULT']['ConnectionString']
+    dataset_id = config['BAAS']['DataGouvID']
     dest_schema = config['BAAS']['Schema']
 
     # get csv list
+    csvs = get_csvs(dataset_id)
     
-    with open(CSV_URLS, 'r') as f:
-        csvs = [csv.rstrip() for csv in f.readlines()]
-
     # cycle through csv and inject them into
     for csv in csvs:
         inject(csv)
