@@ -38,7 +38,7 @@ def get_csvs(dataset_id):
     # retrieve csv urls
     res = requests.get('https://www.data.gouv.fr/api/1/datasets/' + dataset_id)
     csvs = [
-        {'url': r['url'], 'name': os.spslitext(r['title'])[0]}
+        {'url': r['url'], 'name': os.path.spslitext(r['title'])[0]}
         for r in res.json()['resources'] if r['format']=='csv']
     
     # dl csvs as StringIO
