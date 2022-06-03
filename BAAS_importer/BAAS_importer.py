@@ -2,18 +2,17 @@
 
 """ BAAS importer
 
-Merry Spankers Ltd 2022
+Merry Spankers Ltd
+the unlicence 2022
 
 https://www.data.gouv.fr/fr/datasets/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2020/
 This module will download multiple csv files from data.gouv.fr
 and load them into a preconfigured postgres schema
 
 inputs:
--------
     - postgres connexion string
     - csv url list
 outputs:
---------
     - populated schema with new tables
 
 code inspiration: https://stackoverflow.com/questions/2987433/how-to-import-csv-file-data-into-a-postgresql-table
@@ -21,6 +20,7 @@ code inspiration: https://stackoverflow.com/questions/2987433/how-to-import-csv-
 
 # GLOBALS
 INI_FILE = "connexion_string.ini"
+CONN_FILE = "postgres_credentials.ini"
 
 import os
 import io
@@ -47,7 +47,7 @@ def get_csvs(dataset_id):
         csvIO = io.StringIO()
         csvIO.write(res.content)
         csvIO.seek(0)
-        res['csv'] = csvIO
+        csv['csv'] = csvIO
 
     return csvs
 
@@ -56,25 +56,31 @@ def inject(csv, connection, dest_schema):
     injects csv into postgres schema"""
     
     # use pandas as csv reader
-    df = pd.read_csv(csv)
+    df = pd.read_csv(csv['csvIO'])
     df.columns = [c.lower() for c in df.columns]
 
     # use sql_alchemy as postgres writer
     engine = create_engine(connection)
-    df.to_sql(os.path.splitext(os.path.basename(csv))[0], engine, schema=dest_schema)
+    df.to_sql(os.path.splitext(csv['name'])[0], engine, schema=dest_schema)
 
 if __name__ == "__main__":
 
-    # get params from ini file
+    # get postgres credentials and build connection string
+    conn = configparser.ConfigParser()
+    conn.read(CONN_FILE)
+    user = conn['postgres']['user']
+    password = conn['postgres']['password']
+    conn_str = 'postgresql://' + user + ':' + password + '@srv-pgdata:5432/bdd_socle'
+
+    # get params from ini
     config = configparser.ConfigParser()
     config.read(INI_FILE)
-    connection = config['DEFAULT']['ConnectionString']
     dataset_id = config['BAAS']['DataGouvID']
     dest_schema = config['BAAS']['Schema']
 
     # get csv list
     csvs = get_csvs(dataset_id)
-    
+
     # cycle through csv and inject them into
     for csv in csvs:
-        inject(csv)
+        inject(csv, conn_str, dest_schema)
