@@ -73,13 +73,18 @@ if __name__ == "__main__":
     conn.read(CONN_FILE)
     user = conn['postgres']['user']
     password = conn['postgres']['password']
-    conn_str = 'postgresql://' + user + ':' + password + '@srv-pgdata:5432/bdd_socle'
-
+    
     # get params from ini
     config = configparser.ConfigParser()
     config.read(INI_FILE)
+    Host = config['BAAS']['Host']
+    Port = config['BAAS']['Port']
+    Base = config['BAAS']['Base']
     dataset_id = config['BAAS']['DataGouvID']
     dest_schema = config['BAAS']['Schema']
+    
+    # build connection string
+    conn_str = 'postgresql://' + user + ':' + password + '@' + Host + ':' + Port + '/' + Base
 
     # get csv list
     csvs = get_csvs(dataset_id)
