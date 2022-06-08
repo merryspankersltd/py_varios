@@ -54,9 +54,12 @@ def inject(csv, connection, dest_schema):
     """
     injects csv into postgres schema"""
     
-    # use pandas as csv reader
+    # use pandas as csv reader (on error try another separator)
     print('will read ' + csv['name'])
-    df = pd.read_csv(csv['csvIO'], sep=';')
+    try:
+        df = pd.read_csv(csv['csvIO'], sep=';')
+    except pd.errors.ParseError:
+        df = pd.read_csv(csv['csvIO'], sep=',')
     df.columns = [c.lower() for c in df.columns]
 
     # use sql_alchemy as postgres writer
