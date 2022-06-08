@@ -55,6 +55,7 @@ def inject(csv, connection, dest_schema):
     injects csv into postgres schema"""
     
     # use pandas as csv reader
+    print('will read ' + csv['name'])
     df = pd.read_csv(csv['csvIO'])
     df.columns = [c.lower() for c in df.columns]
 
