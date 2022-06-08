@@ -71,9 +71,9 @@ if __name__ == "__main__":
     # get postgres credentials and build connection string
     conn = configparser.ConfigParser()
     conn.read(CONN_FILE)
-    Host = conn['BAAS']['Host']
-    Port = conn['BAAS']['Port']
-    Base = conn['BAAS']['Base']
+    Host = conn['server']['Host']
+    Port = conn['server']['Port']
+    Base = conn['server']['Base']
     user = conn['postgres']['user']
     password = conn['postgres']['password']
     
