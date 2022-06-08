@@ -71,15 +71,15 @@ if __name__ == "__main__":
     # get postgres credentials and build connection string
     conn = configparser.ConfigParser()
     conn.read(CONN_FILE)
+    Host = conn['BAAS']['Host']
+    Port = conn['BAAS']['Port']
+    Base = conn['BAAS']['Base']
     user = conn['postgres']['user']
     password = conn['postgres']['password']
     
-    # get params from ini
+    # get io params from ini
     config = configparser.ConfigParser()
     config.read(INI_FILE)
-    Host = config['BAAS']['Host']
-    Port = config['BAAS']['Port']
-    Base = config['BAAS']['Base']
     dataset_id = config['BAAS']['DataGouvID']
     dest_schema = config['BAAS']['Schema']
     
