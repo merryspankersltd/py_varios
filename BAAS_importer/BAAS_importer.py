@@ -58,7 +58,7 @@ def inject(csv, connection, dest_schema):
     print('will read ' + csv['name'])
     try:
         df = pd.read_csv(csv['csvIO'], sep=';')
-    except pd.errors.ParseError:
+    except:
         df = pd.read_csv(csv['csvIO'], sep=',')
     df.columns = [c.lower() for c in df.columns]
 
