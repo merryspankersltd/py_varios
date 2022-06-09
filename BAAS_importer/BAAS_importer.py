@@ -44,13 +44,13 @@ def get_csvs(dataset_id):
 
     return csvs
 
-def inject(csv, connection, dest_schema):
+def inject(csv, separator, connection, dest_schema):
     """
     injects csv into postgres schema"""
     
     # use pandas as csv dl/reader (on error try another separator)
     print('will read ' + csv['name'])
-    df = pd.read_csv(csv['url'], encoding='ISO-8859-1')
+    df = pd.read_csv(csv['url'], sep=separator, encoding='ISO-8859-1')
     df.columns = [c.lower() for c in df.columns]
 
     # use sql_alchemy as postgres writer
@@ -82,4 +82,11 @@ if __name__ == "__main__":
 
     # cycle through csv and inject them into
     for csv in csvs:
-        inject(csv, conn_str, dest_schema)
+        # set separator (project specific)
+        if 'vehicules-immatricules-baac' in csv['name']:
+            separator = ';'
+        elif '2020' in csv['name'] or '2019' in csv['name']:
+            separator = ';'
+        else:
+            separator = ','
+        inject(csv, separator, conn_str, dest_schema)
