@@ -24,6 +24,7 @@ CONN_FILE = "postgres_credentials.ini"
 
 import os
 import io
+import chardet
 import configparser
 import requests
 import pandas as pd
@@ -40,13 +41,6 @@ def get_csvs(dataset_id):
     csvs = [
         {'url': r['url'], 'name': os.path.splitext(r['title'])[0]}
         for r in res.json()['resources'] if r['format']=='csv']
-    
-    # dl csvs as StringIO
-    for csv in csvs:
-        res = requests.get(csv['url'])
-        res.encoding = 'utf-8'
-        csvIO = io.StringIO(res.text, newline="")
-        csv['csvIO'] = csvIO
 
     return csvs
 
@@ -54,12 +48,9 @@ def inject(csv, connection, dest_schema):
     """
     injects csv into postgres schema"""
     
-    # use pandas as csv reader (on error try another separator)
+    # use pandas as csv dl/reader (on error try another separator)
     print('will read ' + csv['name'])
-    try:
-        df = pd.read_csv(csv['csvIO'], sep=';')
-    except pd.errors.ParserError:
-        df = pd.read_csv(csv['csvIO'], sep=',')
+    df = pd.read_csv(csv['url'], encoding='ISO-8859-1')
     df.columns = [c.lower() for c in df.columns]
 
     # use sql_alchemy as postgres writer
