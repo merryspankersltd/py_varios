@@ -18,7 +18,7 @@ outputs:
 code inspiration: https://stackoverflow.com/questions/2987433/how-to-import-csv-file-data-into-a-postgresql-table
 """
 
-# GLOBALS
+# GLOBALS : ini files
 INI_FILE = "params.ini"
 CONN_FILE = "postgres_credentials.ini"
 
@@ -29,6 +29,31 @@ import configparser
 import requests
 import pandas as pd
 from sqlalchemy import create_engine
+
+def get_conn_params(path_to_ini):
+    '''reads ini files
+    returns Host, Port, Base, user, password'''
+
+    conn = configparser.ConfigParser()
+    conn.read(path_to_ini)
+    Host = conn['server']['Host']
+    Port = conn['server']['Port']
+    Base = conn['server']['Base']
+    user = conn['postgres']['user']
+    password = conn['postgres']['password']
+
+    return Host, Port, Base, user, password
+
+def get_ini_params(path_to_ini):
+    '''reads ini file
+    returns dataset_id, dest_schema'''
+
+    config = configparser.ConfigParser()
+    config.read(path_to_ini)
+    dataset_id = config['BAAS']['DataGouvID']
+    dest_schema = config['BAAS']['Schema']
+
+    return dataset_id, dest_schema
 
 def get_csvs(dataset_id):
     """
@@ -49,40 +74,30 @@ def inject(csv, separator, encoding, connection, dest_schema):
     injects csv into postgres schema"""
     
     # use pandas as csv dl/reader (on error try another separator)
-    print('will read ' + csv['name'])
+    # pd.read_csv(url) magic !!!
     df = pd.read_csv(csv['url'], sep=separator, encoding=encoding)
     df.columns = [c.lower() for c in df.columns]
 
     # use sql_alchemy as postgres writer
+    # df.to_sql(psql) magic !!!
     engine = create_engine(connection)
     df.to_sql(os.path.splitext(csv['name'])[0], engine, schema=dest_schema)
 
 if __name__ == "__main__":
 
-    # get postgres credentials and build connection string
-    conn = configparser.ConfigParser()
-    conn.read(CONN_FILE)
-    Host = conn['server']['Host']
-    Port = conn['server']['Port']
-    Base = conn['server']['Base']
-    user = conn['postgres']['user']
-    password = conn['postgres']['password']
+    # get postgres credentials and io params from ini files
+    Host, Port, Base, user, papssword = get_conn_params(CONN_FILE)
+    dataset_id, dest_schema = get_ini_params(INI_FILE)
     
-    # get io params from ini
-    config = configparser.ConfigParser()
-    config.read(INI_FILE)
-    dataset_id = config['BAAS']['DataGouvID']
-    dest_schema = config['BAAS']['Schema']
-    
-    # build connection string
+    # build connection string to postgres destination
     conn_str = 'postgresql://' + user + ':' + password + '@' + Host + ':' + Port + '/' + Base
 
-    # get csv list
+    # get csv list from data.gouv.fr API
     csvs = get_csvs(dataset_id)
 
-    # cycle through csv and inject them into
+    # cycle through csv and inject them into postgres destination
     for csv in csvs:
-        # set separator (project specific)
+        # set separator and encoding (project specific)
         if 'vehicules-immatricules-baac' in csv['name']:
             separator = ';'
             encoding = 'utf-8'
@@ -92,4 +107,5 @@ if __name__ == "__main__":
         else:
             separator = ','
             encoding = 'iso-8859-1'
+        # inject
         inject(csv, separator, encoding, conn_str, dest_schema)
