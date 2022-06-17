@@ -78,6 +78,7 @@ def inject(csv, separator, encoding, connection, dest_schema):
 
     # use pandas as csv dl/reader (on error try another separator)
     # do nothing if table already exists
+    print('will import ' + csv['name'])
     if not csv['name'] in existing_tbls:
         # pd.read_csv(url) magic !!!
         df = pd.read_csv(csv['url'], sep=separator, encoding=encoding)
