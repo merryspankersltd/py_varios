@@ -73,7 +73,7 @@ def inject(csv, separator, encoding, connection, dest_schema):
     """
     injects csv into postgres schema"""
     
-    # establish connection to postgres and compare csv list to existing
+    # establish connection to postgres and get list of existing tables
     engine = create_engine(connection)
     inspector = inspect(engine)
     existing_tbls = inspector.get_table_names(schema='dest_schema')
@@ -86,6 +86,9 @@ def inject(csv, separator, encoding, connection, dest_schema):
         df.columns = [c.lower() for c in df.columns]
         # use sql_alchemy as postgres writer : df.to_sql(psql) magic !!!
         df.to_sql(os.path.splitext(csv['name'])[0], engine, schema=dest_schema)
+        print(csv['name'] + ' injected')
+    else:
+        print(csv['name'] + ' already exists: not injected')
 
 if __name__ == "__main__":
 
