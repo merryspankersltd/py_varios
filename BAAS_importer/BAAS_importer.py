@@ -80,15 +80,12 @@ def inject(csv, separator, encoding, connection, dest_schema):
 
     # use pandas as csv dl/reader (on error try another separator)
     # do nothing if table already exists
-    # pd.read_csv(url) magic !!!
     if not csv['name'] in existing_tbls:
+        # pd.read_csv(url) magic !!!
         df = pd.read_csv(csv['url'], sep=separator, encoding=encoding)
         df.columns = [c.lower() for c in df.columns]
-
-    # use sql_alchemy as postgres writer
-    # df.to_sql(psql) magic !!!
-
-    df.to_sql(os.path.splitext(csv['name'])[0], engine, schema=dest_schema)
+        # use sql_alchemy as postgres writer : df.to_sql(psql) magic !!!
+        df.to_sql(os.path.splitext(csv['name'])[0], engine, schema=dest_schema)
 
 if __name__ == "__main__":
 
