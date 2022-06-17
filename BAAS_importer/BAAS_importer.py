@@ -112,7 +112,7 @@ if __name__ == "__main__":
         elif any([y in csv['name'] for y in ['2009', '2008', '2007', '2006', '2005']]):
             separator = '\t'
             encoding ='iso-8859-1' # passable...
-        else:
+        else: # 2018 -> 2010
             separator = ';'
             encoding = 'iso-8859-1'
         # inject
