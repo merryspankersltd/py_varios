@@ -109,11 +109,11 @@ if __name__ == "__main__":
         elif any([y in csv['name'] for y in ['2019', '2020']]):
             separator = ';'
             encoding = 'utf-8'
-        elif any([y in csv['name'] for y in ['2009', '2008', '2007', '2006', '2005']]):
+        elif 'caracteristiques_2009' in csv['name']:
             separator = '\t'
             encoding ='iso-8859-1' # passable...
-        else: # 2018 -> 2010
-            separator = ';'
+        else: # 2018 -> 2005
+            separator = ','
             encoding = 'iso-8859-1'
         # inject
         inject(csv, separator, encoding, conn_str, dest_schema)
