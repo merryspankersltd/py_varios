@@ -23,8 +23,6 @@ INI_FILE = "params.ini"
 CONN_FILE = "postgres_credentials.ini"
 
 import os
-import io
-import chardet
 import configparser
 import requests
 import pandas as pd
