@@ -74,11 +74,10 @@ def inject(csv, separator, encoding, connection, dest_schema):
     # establish connection to postgres and get list of existing tables
     engine = create_engine(connection)
     inspector = inspect(engine)
-    existing_tbls = inspector.get_table_names(schema='dest_schema')
+    existing_tbls = inspector.get_table_names(schema=dest_schema)
 
     # use pandas as csv dl/reader (on error try another separator)
     # do nothing if table already exists
-    print('will import ' + csv['name'])
     if not csv['name'] in existing_tbls:
         # pd.read_csv(url) magic !!!
         df = pd.read_csv(csv['url'], sep=separator, encoding=encoding)
@@ -107,11 +106,14 @@ if __name__ == "__main__":
         if 'vehicules-immatricules-baac' in csv['name']:
             separator = ';'
             encoding = 'utf-8'
-        elif '2020' in csv['name'] or '2019' in csv['name']:
+        elif any([y in csv['name'] for y in ['2019', '2020']]):
             separator = ';'
             encoding = 'utf-8'
+        elif any([y in csv['name'] for y in ['2009', '2008', '2007', '2006', '2005']]):
+            separator = '\t'
+            encoding ='iso-8859-1' # passable...
         else:
-            separator = ','
+            separator = ';'
             encoding = 'iso-8859-1'
         # inject
         inject(csv, separator, encoding, conn_str, dest_schema)
