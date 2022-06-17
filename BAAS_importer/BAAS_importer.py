@@ -93,7 +93,7 @@ def inject(csv, separator, encoding, connection, dest_schema):
 if __name__ == "__main__":
 
     # get postgres credentials and io params from ini files
-    Host, Port, Base, user, papssword = get_conn_params(CONN_FILE)
+    Host, Port, Base, user, password = get_conn_params(CONN_FILE)
     dataset_id, dest_schema = get_ini_params(INI_FILE)
     
     # build connection string to postgres destination
