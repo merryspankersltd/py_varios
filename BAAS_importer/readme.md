@@ -55,8 +55,29 @@ Ces sources ne sont pas documentées, elles sont confuses, et pour ces raisons e
 
 A noter enfin que les modèles de données changent d'un millésimme l'autre, ces changements sont partiellement documentés dans des pdf partagés dans le dépôt.
 
+### contrôle qualité
+
+Le contrôle du géocodage fait apparaître de grosses lacunes jusqu'à 2018: on voit apparaître une bande complètement blanche depuis la Normandie jusqu'au Pays Basque. Les points correspondant apparaissent disséminés dans l'Atlantique mais respectent leur latitude initiale (latitude juste, référentiel longitudinal erronné).
+En dehors de cette zone, rien ne permet de penser qu'il existe des lacunes, mais il est fort probable que des points appartenant à la bande disparue puissent se retrouver n'importe où sur le territoire.
+
+A partir de 2019 le géocodage semble cohérent.
+
 ## Nettoyage et constitution des vues
 
-A chaque table source correspond une vue raffinée corrigeant le géocodage (paramètres de correction adaptés à chaque table) et nettoyant les champs (nommages, libellés)
+A chaque table source correspond une vue raffinée corrigeant le géocodage (paramètres de correction adaptés à chaque table) et nettoyant les champs (nommages, libellés), l'objectif étant d'harmoniser le plus possibles les vues résultant d'un millésimme à l'autre:
+
+- BAAS_caracteristiques_20xx
+- BAAS_lieux_20xx
+- BAAS_usagers_20xx
+- BAAS_vehicules_20xx
+
+A partir de ce premier niveau de vues, une série de vues complètes (intégrant les champs caractéristiques, lieux et véhicules) sont produites par millésime, ces vues sont agrégées à la commune afin d'obtenir des comptages communaux (victimes par niveaux de gravité, les usagers indemnes sont exclus de cette vue)
+
+- BAAS_victimes_20xx
+- BAAS_victimes_com_20xx
+
+Enfin une table de synthèse de toutes les victimes de 2010 à 2020 est constituée afin de rechercher les points noirs sur le temps long:
+
+- BAA_victimes_2010_2020
 
 
