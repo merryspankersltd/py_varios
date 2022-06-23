@@ -78,6 +78,6 @@ A partir de ce premier niveau de vues, une série de vues complètes (intégrant
 
 Enfin une table de synthèse de toutes les victimes de 2010 à 2020 est constituée afin de rechercher les points noirs sur le temps long:
 
-- BAA_victimes_2010_2020
+- BAAS_victimes_2010_2020
 
-
+Pour des raisons d'encombrement du serveur, seules les vues BAAS_victimes_20xx et BAAS_victimes_2010_2020 sont matérialisées
