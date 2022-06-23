@@ -81,3 +81,10 @@ Enfin une table de synthèse de toutes les victimes de 2010 à 2020 est constitu
 - BAAS_victimes_2010_2020
 
 Pour des raisons d'encombrement du serveur, seules les vues BAAS_victimes_20xx et BAAS_victimes_2010_2020 sont matérialisées
+
+Lorsque ça a été possible, des tables de libellés (lib_xxx) ont été constituées à partir de la documentation disponible, mais il y a de nombreux cas particuliers et la plupart du temps (avant 2019) les libellés sont écrits en dur dans la requête:
+
+```sql
+WITH tmp_fld(fld, fld_lib) AS (
+         VALUES (1,'val 1'::text), (2,'val 2'::text)
+```
