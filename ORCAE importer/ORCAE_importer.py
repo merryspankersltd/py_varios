@@ -59,19 +59,19 @@ def url_to_df(url):
 
 if __name__ == "__main__":
 
-# builds a list of dataframes from urls
-dfs = [url_to_df(url) for url in urls]
+    # builds a list of dataframes from urls
+    dfs = [url_to_df(url) for url in urls]
 
-# pandas operations :
-#   concatenates all dataframes into one
-df_concat = pd.concat(dfs)
-#   filters rows
-conso = df_concat[(df_concat["secteur"].isin(['Branche énergie', 'Tous secteurs hors branche énergie']) & (df_concat["énergie"] == 'Toutes énergies') & (df_concat["usage"] == 'Tous usages'))]
-#   group by and sums by depcom
-parcom = conso[["code insee", "année", "valeur (kteqCO2)"]].groupby(["code insee", "année"], as_index=False).sum()
-#   pivot by years
-pivoted = parcom.pivot(index="code insee", columns="année", values="valeur (kteqCO2)")
-#   establish connection to psql and injects
-Host, Port, Base, user, password = get_conn_params(CONN_FILE)
-engine = create_engine('postgresql://' + user + ':' + password + '@' + Host + ':' + Port + '/' + Base)
-pivoted.to_sql('orcae_consoCO2', engine, 'd_mobilite')
+    # pandas operations :
+    #   concatenates all dataframes into one
+    df_concat = pd.concat(dfs)
+    #   filters rows
+    conso = df_concat[(df_concat["secteur"].isin(['Branche énergie', 'Tous secteurs hors branche énergie']) & (df_concat["énergie"] == 'Toutes énergies') & (df_concat["usage"] == 'Tous usages'))]
+    #   group by and sums by depcom
+    parcom = conso[["code insee", "année", "valeur (kteqCO2)"]].groupby(["code insee", "année"], as_index=False).sum()
+    #   pivot by years
+    pivoted = parcom.pivot(index="code insee", columns="année", values="valeur (kteqCO2)")
+    #   establish connection to psql and injects
+    Host, Port, Base, user, password = get_conn_params(CONN_FILE)
+    engine = create_engine('postgresql://' + user + ':' + password + '@' + Host + ':' + Port + '/' + Base)
+    pivoted.to_sql('orcae_consoCO2', engine, 'd_mobilite')
