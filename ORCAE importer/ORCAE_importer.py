@@ -59,7 +59,7 @@ def url_to_dfs(url, targets):
 
     return dfs
 
-def inject_df(df, engine, value_field, dest_schema):
+def inject_df(df, engine, value_field, dest_table):
 
     filtered_df = df[(
         df["secteur"].isin(['Branche énergie', 'Tous secteurs hors branche énergie'])
@@ -70,15 +70,15 @@ def inject_df(df, engine, value_field, dest_schema):
     #   pivot by years
     pivoted = parcom.pivot(index="code insee", columns="année", values=value_field)
     #   establish connection to psql and injects
-    pivoted.to_sql(value_field, engine, dest_schema)
+    pivoted.to_sql(dest_table, engine, 'd_mobilite')
 
 if __name__ == "__main__":
 
     # retrieve data from urls and filename patterns :
     #   targets are filename patterns to be found in a zip archive
     targets = [
-        ('orcae_eges_communes_', 'valeur (kteqCO2)', 'orcae_conso_CO2'),
-        ('orcae_conso_communes_', 'valeur (GWh)', 'orcae_conso_Energie')]
+        ('orcae_conso_communes_', 'valeur (GWh)', 'orcae_conso_Energie'),
+        ('orcae_eges_communes_', 'valeur (kteqCO2)', 'orcae_conso_CO2')]
     #   dfs is a list of lists of dataframes
     dfs = [url_to_dfs(url, targets) for url in urls]
 
