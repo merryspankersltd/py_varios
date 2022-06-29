@@ -35,8 +35,8 @@ def get_conn_params(path_to_ini):
     Host = conn['server']['Host']
     Port = conn['server']['Port']
     Base = conn['server']['Base']
-    user = conn['postgres']['user']
-    password = conn['postgres']['password']
+    user = conn['user 1']['user']
+    password = conn['user 1']['password']
 
     return Host, Port, Base, user, password
 
@@ -76,19 +76,24 @@ def inject_df(df, engine, value_field, dest_schema):
 if __name__ == "__main__":
 
     # retrieve data from urls and filename patterns :
+    # %%
     #   targets are filename patterns to be found in a zip archive
     targets = [
         ('orcae_eges_communes_', 'valeur (kteqCO2)', 'orcae_conso_CO2'),
         ('orcae_conso_communes_', 'valeur (GWh)', 'orcae_conso_Energie')]
+    # %%
     #   dfs is a list of lists of dataframes
     dfs = [url_to_dfs(url, targets) for url in urls]
 
     # pandas operations :
+    # %%
     #   concatenates dataframes by theme (cf targets)
     dfs_concat = [pd.concat(zipped_df) for zipped_df in list(zip(*dfs))]
+    # %%
     # establisch connection with server
     Host, Port, Base, user, password = get_conn_params(CONN_FILE)
     engine = create_engine('postgresql://' + user + ':' + password + '@' + Host + ':' + Port + '/' + Base)
+    # %%
     # injects concatenated dfs
     for target, df in list(zip(targets, dfs_concat)):
         inject_df(df, engine, target[1], target[2])
