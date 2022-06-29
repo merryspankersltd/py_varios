@@ -63,10 +63,13 @@ if __name__ == "__main__":
     dfs = [url_to_df(url) for url in urls]
 
     # pandas operations :
-    #   concatenates all dataframes into one
+    #   concatenates all dataframes into one (departements -> region)
     df_concat = pd.concat(dfs)
-    #   filters rows
-    conso = df_concat[(df_concat["secteur"].isin(['Branche énergie', 'Tous secteurs hors branche énergie']) & (df_concat["énergie"] == 'Toutes énergies') & (df_concat["usage"] == 'Tous usages'))]
+    #   filters rows (rows cumulates items and sums of items: keep sums only)
+    conso = df_concat[(
+        df_concat["secteur"].isin(['Branche énergie', 'Tous secteurs hors branche énergie'])
+        & (df_concat["énergie"] == 'Toutes énergies')
+        & (df_concat["usage"] == 'Tous usages'))]
     #   group by and sums by depcom
     parcom = conso[["code insee", "année", "valeur (kteqCO2)"]].groupby(["code insee", "année"], as_index=False).sum()
     #   pivot by years
