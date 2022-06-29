@@ -40,41 +40,55 @@ def get_conn_params(path_to_ini):
 
     return Host, Port, Base, user, password
 
-def url_to_df(url):
+def url_to_dfs(url, targets):
     '''
-    downloads a zip, extract one specific csv and returns a panda dataframe'''
+    downloads a zip, extract multiple specific csvs and returns a list of panda dataframes
+    targets is a list of filename patterns to be found in the zipfile'''
     
     # download
     res = requests.get(url)
     # read zip from response
     azip = ZipFile(BytesIO(res.content))
-    # gets specific csv name based on pattern
-    csv_name = [n for n in azip.namelist if 'donnees_detaillees_communes_' in n][0]
-    # extracts csv to BytesIO file
-    csv = azip.read(csv_name)
     # loads into a pandas dataframe
-    df = pd.read_csv(BytesIO(csv), sep=';', encoding='cp1252', decimal=',', na_values='S', dtype={'code insee': str})
+    dfs = [
+        pd.read_csv(
+            BytesIO(azip.read(csv_name)),
+            sep=';', encoding='cp1252', decimal=',',
+            na_values='S', dtype={'code insee': str})
+        for csv_name in azip.namelist()
+        if any([target[0] in csv_name for target in targets])]
 
-    return df
+    return dfs
+
+def inject_df(df, engine, value_field, dest_schema):
+
+    filtered_df = df[(
+        df["secteur"].isin(['Branche énergie', 'Tous secteurs hors branche énergie'])
+        & (df["énergie"] == 'Toutes énergies')
+        & (df["usage"] == 'Tous usages'))]
+    #   group by and sums by depcom
+    parcom = filtered_df[["code insee", "année", value_field]].groupby(["code insee", "année"], as_index=False).sum()
+    #   pivot by years
+    pivoted = parcom.pivot(index="code insee", columns="année", values=value_field)
+    #   establish connection to psql and injects
+    pivoted.to_sql(value_field, engine, dest_schema)
 
 if __name__ == "__main__":
 
-    # builds a list of dataframes from urls
-    dfs = [url_to_df(url) for url in urls]
+    # retrieve data from urls and filename patterns :
+    #   targets are filename patterns to be found in a zip archive
+    targets = [
+        ('orcae_eges_communes_', 'valeur (kteqCO2)', 'orcae_conso_CO2'),
+        ('orcae_conso_communes_', 'valeur (GWh)', 'orcae_conso_Energie')]
+    #   dfs is a list of lists of dataframes
+    dfs = [url_to_dfs(url, targets) for url in urls]
 
     # pandas operations :
-    #   concatenates all dataframes into one (departements -> region)
-    df_concat = pd.concat(dfs)
-    #   filters rows (rows cumulates items and sums of items: keep sums only)
-    conso = df_concat[(
-        df_concat["secteur"].isin(['Branche énergie', 'Tous secteurs hors branche énergie'])
-        & (df_concat["énergie"] == 'Toutes énergies')
-        & (df_concat["usage"] == 'Tous usages'))]
-    #   group by and sums by depcom
-    parcom = conso[["code insee", "année", "valeur (kteqCO2)"]].groupby(["code insee", "année"], as_index=False).sum()
-    #   pivot by years
-    pivoted = parcom.pivot(index="code insee", columns="année", values="valeur (kteqCO2)")
-    #   establish connection to psql and injects
+    #   concatenates dataframes by theme (cf targets)
+    dfs_concat = [pd.concat(zipped_df) for zipped_df in list(zip(*dfs))]
+    # establisch connection with server
     Host, Port, Base, user, password = get_conn_params(CONN_FILE)
     engine = create_engine('postgresql://' + user + ':' + password + '@' + Host + ':' + Port + '/' + Base)
-    pivoted.to_sql('orcae_consoCO2', engine, 'd_mobilite')
+    # injects concatenated dfs
+    for target, df in list(zip(targets, dfs_concat)):
+        inject_df(df, engine, target[1], target[2])
